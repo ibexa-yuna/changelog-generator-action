@@ -1,0 +1,13 @@
+name: "Version Logic action"
+description: "Uses Ibexa-specific rules to output previous tag for comparing"
+author: "Petro Kurbatskyi"
+inputs:
+  currentTag:
+    description: "Current tag"
+    default: "v1.0.0"
+outputs:
+  previousTag:
+    description: "Output from the action"
+runs:
+  using: "docker"
+  image: "Dockerfile"
