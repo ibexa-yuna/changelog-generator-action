@@ -1,13 +1,18 @@
-name: "Version Logic action"
-description: "Uses Ibexa-specific rules to output previous tag for comparing"
+name: "Changelog Generator action"
+description: "Generates changelog between commits"
 author: "Petro Kurbatskyi"
 inputs:
   currentTag:
     description: "Current tag"
-    default: "v1.0.0"
-outputs:
+    required: true
   previousTag:
-    description: "Output from the action"
+    description: "Previous tag"
+    required: true
+  github_token:
+    required: true
+outputs:
+  changelog:
+    description: "Changelog output"
 runs:
   using: "docker"
   image: "Dockerfile"

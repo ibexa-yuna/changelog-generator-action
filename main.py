@@ -1,21 +1,77 @@
 import os
-import requests  # noqa We are just importing this to prove the dependency installed correctly
-import semver
+import re
+
+from github import Github
+
+
+# TODO: Make sure that we can categorize commits based on JIRA type
+def format_messages(message, repo_name):
+    # Extract only first line of commit message
+    message = message.partition("\n")[0]
+
+    # Add JIRA links
+    message = add_jira_links(message)
+
+    # Add PR links
+    # Links must be explicit links, because when we will be combining changelogs in one release
+    # relative links will be linking to wrong repo/will be not links
+    message = add_pr_links(message, repo_name)
+
+    return "- " + message
+
+
+def add_jira_links(message):
+    regex = r"^((?!([A-Z0-9a-z]{1,10})-?$)[A-Z]{1}[A-Z0-9]+-\d+)"
+    subst = "[\\1](https://issues.ibexa.co/browse/\\1)"
+    result = re.sub(regex, subst, message, 0, re.MULTILINE)
+    return result
+
+
+def add_pr_links(message, repo_name):
+    regex = r"\(#(\d+)\)"
+    subst = f"([#\\1](https://github.com/{repo_name}/pull/\\1))"
+    message = re.sub(regex, subst, message, 0, re.MULTILINE)
+    return message
+
+
+def prepare_output(txt):
+    return txt.replace("\n", "%0A")
+
+
+def generate_header(repo_name, previous_tag, current_tag):
+    return (
+        f"[{repo_name}](https://github.com/{repo_name})"
+        + " changes between "
+        + f"[{previous_tag}](https://github.com/{repo_name}/releases/tag/{previous_tag})"
+        + " and "
+        + f"[{current_tag}](https://github.com/{repo_name}/releases/tag/{current_tag})\n\n"
+    )
 
 
 def main():
-    # cut initial v from input
-    current_tag = os.environ["INPUT_CURRENTTAG"][1:]
+    current_tag = os.environ["INPUT_CURRENTTAG"]
+    previous_tag = os.environ["INPUT_PREVIOUSTAG"]
 
-    major, minor, patch, _, _ = semver.VersionInfo.parse(current_tag)
-    if not patch and not minor:
-        previous_tag = semver.format_version(major - 1, 0, 0)
-    elif not patch:
-        previous_tag = semver.format_version(major, minor - 1, 0)
-    else:
-        previous_tag = semver.format_version(major, minor, patch - 1)
+    github = Github(os.environ["INPUT_GITHUB_TOKEN"])
 
-    print(f"::set-output name=previousTag::v{previous_tag}")
+    repo_name = os.environ["GITHUB_REPOSITORY"]
+    repo = github.get_repo(repo_name)
+
+    compare_data = repo.compare(previous_tag, current_tag)
+    messages_data = [
+        format_messages(o.commit.message, repo_name)
+        for o in compare_data.commits
+        if len(o.commit.parents) < 2
+    ]
+
+    header = generate_header(repo_name, previous_tag, current_tag)
+
+    # %0A is a replacement of \n in github actions output,
+    # so that multiline output is parsed properly
+    # This is why we invoke prepare_output(): replace all \n with %0A
+    messages = header + "\n".join(map(str, messages_data))
+
+    print(f"::set-output name=changelog::{prepare_output(messages)}")
 
 
 if __name__ == "__main__":
