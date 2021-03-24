@@ -15,8 +15,9 @@ def format_messages(message, repo_name):
     message = add_jira_links(message)
 
     # Add PR links
-    # Links must be explicit links, because when we will be combining changelogs
-    # in one release relative links will be linking to wrong repo/will be not links
+    # Links must be explicit links,
+    # because when we will be combining changelogs in one release
+    # relative links will be linking to wrong repo/will be not links
     message = add_pr_links(message, repo_name)
 
     return "- " + message
