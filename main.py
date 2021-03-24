@@ -15,8 +15,8 @@ def format_messages(message, repo_name):
     message = add_jira_links(message)
 
     # Add PR links
-    # Links must be explicit links, because when we will be combining changelogs in one release
-    # relative links will be linking to wrong repo/will be not links
+    # Links must be explicit links, because when we will be combining changelogs
+    # in one release relative links will be linking to wrong repo/will be not links
     message = add_pr_links(message, repo_name)
 
     return "- " + message
@@ -41,12 +41,13 @@ def prepare_output(txt):
 
 
 def generate_header(repo_name, previous_tag, current_tag):
+    tag_link = f"https://github.com/{repo_name}/releases/tag"
     return (
         f"[{repo_name}](https://github.com/{repo_name})"
         + " changes between "
-        + f"[{previous_tag}](https://github.com/{repo_name}/releases/tag/{previous_tag})"
+        + f"[{previous_tag}]({tag_link}/{previous_tag})"
         + " and "
-        + f"[{current_tag}](https://github.com/{repo_name}/releases/tag/{current_tag})\n\n"
+        + f"[{current_tag}]({tag_link}/{current_tag})\n\n"
     )
 
 
