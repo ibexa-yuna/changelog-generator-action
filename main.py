@@ -53,6 +53,8 @@ def generate_header(repo_name, previous_tag, current_tag):
 
 
 def main():
+    bare_output = os.getenv('INPUT_BARE', False)
+
     current_tag = os.environ["INPUT_CURRENTTAG"]
     previous_tag = os.environ["INPUT_PREVIOUSTAG"]
 
@@ -75,7 +77,10 @@ def main():
     # This is why we invoke prepare_output(): replace all \n with %0A
     messages = header + "\n".join(map(str, messages_data))
 
-    print(f"::set-output name=changelog::{prepare_output(messages)}")
+    if bare_output:
+        print(messages)
+    else:
+        print(f"::set-output name=changelog::{prepare_output(messages)}")
 
 
 if __name__ == "__main__":
