@@ -2,17 +2,21 @@ import os
 import re
 
 from github import Github
+from jira import JIRA
 
-JIRA_PREFIX = "https://issues.ibexa.co/browse/"
+JIRA_SERVER = "https://issues.ibexa.co"
+JIRA_PREFIX = f"{JIRA_SERVER}/browse/"
 
 
-# TODO: Make sure that we can categorize commits based on JIRA type
-def format_messages(message, repo_name):
+def format_messages(message, repo_name, jira):
     # Extract only first line of commit message
     message = message.partition("\n")[0]
 
     # Add JIRA links
-    message = add_jira_links(message)
+    message, issue_category, jira_id = add_jira_links(message, jira)
+
+    if not jira_id:
+        return ""
 
     # Add PR links
     # Links must be explicit links,
@@ -20,14 +24,37 @@ def format_messages(message, repo_name):
     # relative links will be linking to wrong repo/will be not links
     message = add_pr_links(message, repo_name)
 
-    return "- " + message
+    return {"text": "- " + message, "category": issue_category}
 
 
-def add_jira_links(message):
+def get_components(issue):
+    return [o.name for o in issue.fields.components]
+
+
+def is_bug(issue):
+    return issue.fields.issuetype.name == "Bug"
+
+
+def add_jira_links(message, jira):
     regex = r"^((?!([A-Z0-9a-z]{1,10})-?$)[A-Z]{1}[A-Z0-9]+-\d+)"
     subst = f"[\\1]({JIRA_PREFIX}\\1)"
     result = re.sub(regex, subst, message, 0, re.MULTILINE)
-    return result
+    jira_ids = re.findall(regex, message)
+    if jira_ids:
+        jira_issue = jira.issue(id=jira_ids[0])
+        if "QA" in get_components(jira_issue):
+            category = "Miscellaneous"
+        elif is_bug(jira_issue):
+            category = "Bugs"
+        else:
+            category = "Improvements"
+
+        jira_id = jira_ids[0]
+    else:
+        category = None
+        jira_id = None
+
+    return result, category, jira_id
 
 
 def add_pr_links(message, repo_name):
@@ -48,34 +75,51 @@ def generate_header(repo_name, previous_tag, current_tag):
         + " changes between "
         + f"[{previous_tag}]({tag_link}/{previous_tag})"
         + " and "
-        + f"[{current_tag}]({tag_link}/{current_tag})\n\n"
+        + f"[{current_tag}]({tag_link}/{current_tag})\n"
     )
 
 
 def main():
-    bare_output = os.getenv('INPUT_BARE', False)
+    bare_output = os.getenv("INPUT_BARE", False)
 
     current_tag = os.environ["INPUT_CURRENTTAG"]
     previous_tag = os.environ["INPUT_PREVIOUSTAG"]
 
     github = Github(os.environ["INPUT_GITHUB_TOKEN"])
+    jira_token = os.getenv("INPUT_JIRA_TOKEN", "")
+    jira = JIRA(
+        JIRA_SERVER,
+        options={"headers": {"Authorization": f"Bearer {jira_token}"}},
+    )
 
     repo_name = os.environ["GITHUB_REPOSITORY"]
     repo = github.get_repo(repo_name)
 
     compare_data = repo.compare(previous_tag, current_tag)
     messages_data = [
-        format_messages(o.commit.message, repo_name)
+        format_messages(o.commit.message, repo_name, jira)
         for o in compare_data.commits
         if len(o.commit.parents) < 2
     ]
+
+    messages = list(filter(None, messages_data))
+
+    improvements = [d["text"] for d in messages if d["category"] == "Improvements"]
+    bugs = [d["text"] for d in messages if d["category"] == "Bugs"]
+    miscellaneous = [d["text"] for d in messages if d["category"] == "Miscellaneous"]
 
     header = generate_header(repo_name, previous_tag, current_tag)
 
     # %0A is a replacement of \n in github actions output,
     # so that multiline output is parsed properly
     # This is why we invoke prepare_output(): replace all \n with %0A
-    messages = header + "\n".join(map(str, messages_data))
+    messages = header
+    if improvements:
+        messages += "\n\n### Improvements\n\n" + "\n".join(map(str, improvements))
+    if bugs:
+        messages += "\n\n### Bugs\n\n" + "\n".join(map(str, bugs))
+    if miscellaneous:
+        messages += "\n\n### Misc\n\n" + "\n".join(map(str, miscellaneous))
 
     if bare_output:
         print(messages)

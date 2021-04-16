@@ -10,9 +10,13 @@ inputs:
     required: true
   github_token:
     required: true
+  jira_token:
+    required: true
+    description: "JIRA token to use to talk to JIRA"
 outputs:
   changelog:
     description: "Changelog output"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/ibexa-yuna/changelog-generator-action:v1.0.0"
+  image: "Dockerfile"
+  #image: "docker://ghcr.io/ibexa/changelog-generator-action:v2.0.0"
