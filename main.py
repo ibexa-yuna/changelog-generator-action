@@ -121,11 +121,14 @@ def main():
     # This is why prepare_output() is used: replace all \n with %0A
     messages = header
     if improvements:
-        messages += "\n\n### Improvements\n\n" + "\n".join(map(str, improvements))
+        messages += "\n\n### Improvements\n\n" + \
+                    "\n".join(map(str, improvements))
     if bugs:
-        messages += "\n\n### Bugs\n\n" + "\n".join(map(str, bugs))
+        messages += "\n\n### Bugs\n\n" + \
+                    "\n".join(map(str, bugs))
     if miscellaneous:
-        messages += "\n\n### Misc\n\n" + "\n".join(map(str, miscellaneous))
+        messages += "\n\n### Misc\n\n" + \
+                    "\n".join(map(str, miscellaneous))
 
     if bare_output:
         print(messages)
