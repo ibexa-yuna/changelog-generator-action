@@ -18,5 +18,4 @@ outputs:
     description: "Changelog output"
 runs:
   using: "docker"
-  image: "Dockerfile"
-  #image: "docker://ghcr.io/ibexa/changelog-generator-action:v2.0.0"
+  image: "docker://ghcr.io/ibexa/changelog-generator-action:v2.0.0"
