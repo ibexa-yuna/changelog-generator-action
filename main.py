@@ -104,15 +104,21 @@ def main():
 
     messages = list(filter(None, messages_data))
 
-    improvements = [d["text"] for d in messages if d["category"] == "Improvements"]
-    bugs = [d["text"] for d in messages if d["category"] == "Bugs"]
-    miscellaneous = [d["text"] for d in messages if d["category"] == "Miscellaneous"]
+    improvements = [
+        d["text"] for d in messages if d["category"] == "Improvements"
+    ]
+    bugs = [
+        d["text"] for d in messages if d["category"] == "Bugs"
+    ]
+    miscellaneous = [
+        d["text"] for d in messages if d["category"] == "Miscellaneous"
+    ]
 
     header = generate_header(repo_name, previous_tag, current_tag)
 
     # %0A is a replacement of \n in github actions output,
     # so that multiline output is parsed properly
-    # This is why we invoke prepare_output(): replace all \n with %0A
+    # This is why prepare_output() is used: replace all \n with %0A
     messages = header
     if improvements:
         messages += "\n\n### Improvements\n\n" + "\n".join(map(str, improvements))
