@@ -2,7 +2,7 @@ import os
 import re
 
 from github import Github
-from jira import JIRA
+from jira import JIRA, JIRAError
 
 JIRA_SERVER = "https://issues.ibexa.co"
 JIRA_PREFIX = f"{JIRA_SERVER}/browse/"
@@ -41,12 +41,16 @@ def add_jira_links(message, jira):
     result = re.sub(regex, subst, message, 0, re.MULTILINE)
     jira_ids = re.findall(regex, message)
     if jira_ids:
-        jira_issue = jira.issue(id=jira_ids[0])
-        if "QA" in get_components(jira_issue):
-            category = "Miscellaneous"
-        elif is_bug(jira_issue):
-            category = "Bugs"
-        else:
+        try:
+            jira_issue = jira.issue(id=jira_ids[0])
+            if "QA" in get_components(jira_issue):
+                category = "Miscellaneous"
+            elif is_bug(jira_issue):
+                category = "Bugs"
+            else:
+                category = "Improvements"
+        except JIRAError as e:
+            print e.status_code, e.text
             category = "Improvements"
 
         jira_id = jira_ids[0]
