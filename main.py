@@ -1,7 +1,7 @@
 import os
 import re
 
-from github import Github
+from github import Github, UnknownObjectException
 from jira import JIRA, JIRAError
 
 JIRA_SERVER = "https://issues.ibexa.co"
