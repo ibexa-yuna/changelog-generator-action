@@ -99,40 +99,44 @@ def main():
     repo_name = os.environ["GITHUB_REPOSITORY"]
     repo = github.get_repo(repo_name)
 
-    compare_data = repo.compare(previous_tag, current_tag)
-    messages_data = [
-        format_messages(o.commit.message, repo_name, jira)
-        for o in compare_data.commits
-        if len(o.commit.parents) < 2
-    ]
+    try:
+        compare_data = repo.compare(previous_tag, current_tag)
+        messages_data = [
+            format_messages(o.commit.message, repo_name, jira)
+            for o in compare_data.commits
+            if len(o.commit.parents) < 2
+        ]
 
-    messages = list(filter(None, messages_data))
+        messages = list(filter(None, messages_data))
 
-    improvements = [
-        d["text"] for d in messages if d["category"] == "Improvements"
-    ]
-    bugs = [
-        d["text"] for d in messages if d["category"] == "Bugs"
-    ]
-    miscellaneous = [
-        d["text"] for d in messages if d["category"] == "Miscellaneous"
-    ]
+        improvements = [
+            d["text"] for d in messages if d["category"] == "Improvements"
+        ]
+        bugs = [
+            d["text"] for d in messages if d["category"] == "Bugs"
+        ]
+        miscellaneous = [
+            d["text"] for d in messages if d["category"] == "Miscellaneous"
+        ]
 
-    header = generate_header(repo_name, previous_tag, current_tag)
+        header = generate_header(repo_name, previous_tag, current_tag)
 
-    # %0A is a replacement of \n in github actions output,
-    # so that multiline output is parsed properly
-    # This is why prepare_output() is used: replace all \n with %0A
-    messages = header
-    if improvements:
-        messages += "\n\n### Improvements\n\n" + \
-                    "\n".join(map(str, improvements))
-    if bugs:
-        messages += "\n\n### Bugs\n\n" + \
-                    "\n".join(map(str, bugs))
-    if miscellaneous:
-        messages += "\n\n### Misc\n\n" + \
-                    "\n".join(map(str, miscellaneous))
+        # %0A is a replacement of \n in github actions output,
+        # so that multiline output is parsed properly
+        # This is why prepare_output() is used: replace all \n with %0A
+        messages = header
+        if improvements:
+            messages += "\n\n### Improvements\n\n" + \
+                        "\n".join(map(str, improvements))
+        if bugs:
+            messages += "\n\n### Bugs\n\n" + \
+                        "\n".join(map(str, bugs))
+        if miscellaneous:
+            messages += "\n\n### Misc\n\n" + \
+                        "\n".join(map(str, miscellaneous))
+
+    except UnknownObjectException as e:
+        messages = ""
 
     if bare_output:
         print(messages)
