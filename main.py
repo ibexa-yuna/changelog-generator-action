@@ -50,7 +50,8 @@ def add_jira_links(message, jira):
             else:
                 category = "Improvements"
         except JIRAError as e:
-            print(e.status_code, e.text)
+            # We silently ignore errors, as there were cases when JIRA IDs had typoes
+            # print(e.status_code, e.text)
             category = "Improvements"
 
         jira_id = jira_ids[0]
