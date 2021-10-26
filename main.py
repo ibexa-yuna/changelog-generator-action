@@ -136,6 +136,9 @@ def main():
             messages += "\n\n### Misc\n\n" + \
                         "\n".join(map(str, miscellaneous))
 
+        if not (improvements or bugs or miscellaneous):
+            messages += "\n\nNo significant changes."
+
     except UnknownObjectException as e:
         messages = ""
 
