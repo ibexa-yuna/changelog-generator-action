@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from github import Github, UnknownObjectException
 from jira import JIRA, JIRAError
@@ -98,6 +99,13 @@ def main():
     )
 
     repo_name = os.environ["GITHUB_REPOSITORY"]
+    if repo_name == "ezsystems/payment-core-bundle":
+        repo_name = "ezsystems/JMSPaymentCoreBundle"
+    elif repo_name == "ezsystems/stash-bundle":
+        repo_name = "ezsystems/TedivmStashBundle"
+    elif repo_name == "ezsystems/apache-tika-bundle":
+        repo_name = "ezsystems/ApacheTikaBundle"
+    #print(f"Processing {repo_name}")
     repo = github.get_repo(repo_name)
 
     try:
