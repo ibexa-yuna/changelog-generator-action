@@ -101,6 +101,8 @@ def main():
     repo_name = os.environ["GITHUB_REPOSITORY"]
     if repo_name == "ezsystems/payment-core-bundle":
         repo_name = "ezsystems/JMSPaymentCoreBundle"
+    elif repo_name == "ezsystems/job-queue-bundle":
+        repo_name = "ezsystems/JMSJobQueueBundle"
     elif repo_name == "ezsystems/stash-bundle":
         repo_name = "ezsystems/TedivmStashBundle"
     elif repo_name == "ezsystems/apache-tika-bundle":
