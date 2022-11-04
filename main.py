@@ -107,6 +107,8 @@ def main():
         repo_name = "ezsystems/TedivmStashBundle"
     elif repo_name == "ezsystems/apache-tika-bundle":
         repo_name = "ezsystems/ApacheTikaBundle"
+    elif repo_name == "ezsystems/comment-bundle":
+        repo_name = "ezsystems/CommentsBundle"
     #print(f"Processing {repo_name}")
     repo = github.get_repo(repo_name)
 
