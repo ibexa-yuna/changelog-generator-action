@@ -4,6 +4,7 @@ import sys
 
 from github import Github, UnknownObjectException
 from jira import JIRA, JIRAError
+from github_action_utils import set_output
 
 JIRA_SERVER = "https://issues.ibexa.co"
 JIRA_PREFIX = f"{JIRA_SERVER}/browse/"
@@ -157,7 +158,7 @@ def main():
     if bare_output:
         print(messages)
     else:
-        print(f"::set-output name=changelog::{prepare_output(messages)}")
+        set_output("changelog", prepare_output(messages))
 
 
 if __name__ == "__main__":
