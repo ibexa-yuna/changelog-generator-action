@@ -158,7 +158,7 @@ def main():
     if bare_output:
         print(messages)
     else:
-        set_output("changelog", prepare_output(messages))
+        set_output("changelog", messages)
 
 
 if __name__ == "__main__":
