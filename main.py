@@ -4,7 +4,7 @@ import sys
 
 from github import Github, UnknownObjectException
 from jira import JIRA, JIRAError
-from github_action_utils import set_output
+from actions_toolkit import core as gha
 
 JIRA_SERVER = "https://issues.ibexa.co"
 JIRA_PREFIX = f"{JIRA_SERVER}/browse/"
@@ -158,7 +158,7 @@ def main():
     if bare_output:
         print(messages)
     else:
-        set_output("changelog", messages)
+        gha.set_output("changelog", messages)
 
 
 if __name__ == "__main__":
